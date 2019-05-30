@@ -1,0 +1,83 @@
+BASIC
+======
+kubectl version
+kubectl run <name> —image=image --port=<port-number>
+        kubeclt run hello-minikube --image=gcr.io/google_containers/echoserver:1.4 --port=8080
+kubectl create
+kubectl expose <type> <identifier-name> [--port=external-port] [--target-port=container-port] [--type=service-type]
+        kubectl expose deployment hello-minikube --type=NodePort
+        kubectl expose deployment tomcat-deployment --type=LoadBalancer --port=8080 --target-port=8080 --name=tomcat-load-balancer
+kubectl port-forward <pod-name> [localport:]remoteport
+kubectl attach <pod-name> -c <container>
+        
+kubectl exec [-it] <pod-name> [-c <container>] -- COMMAND [args]
+        kubectl exec -it tomcat-deployment-5c4b9b9c99-wbjbs bash
+
+kubectl label [---overwrite] <type> KEY-1=VAL-1 ...
+kubectl get         
+	pods
+    deployments
+	services
+
+kubectl describe 
+        pod [pod-name]
+	deployments
+        services
+kubectl scale --replicas=<number> deployment/<deplyment-name>
+
+kubectl delete deployment hello-minikube
+
+
+DEPLOYMENT - EXPOSE - SERVICE
+========================================
+kubectl apply -f ./deployment.yaml
+kubectl expose deployment tomcat-deployment --type=NodePort
+kubectl describe deployment tomcat-deployment
+minikube service tomcat-deployment --url
+
+LABELS
+======
+kubectl label node minikube storageType=ssd
+kubectl describe nodes
+review yaml file to ensure nodeSelector -> StorageType: ssd
+kubectl apply -f ./deployment.yaml
+
+DNS
+====
+#<my-service-name>.<my-namespace>.svc.cluster.local
+#<my-service-name>: name of deployment
+kubectl create-f ./mysql-deployment.yaml
+kubectl create-f ./wordpress-deployment.yaml
+kubectl get services wordpress
+
+PRODUCTION
+===========
+#Download kops and install in Linux: https://github.com/kubernetes/kops
+#Config AWS
+#Create S3 bucket as store
+aws s3api create-bucket --bucket <name>-k8s-demo-bucket --region=eu-central-1 --create-bucket-configuration LocationConstraint=eu-central-1
+#Create cluster
+export KOPS_STATE_STORE=s3://<name>-k8s-demo-bucket
+#if ssh key not
+ssh-keygen #accetp all
+kops create cluster <name>-k8s-demo.k8s.local --zones eu-central-1 --yes
+#validate cluster
+kops validate cluster
+#get nodes
+kubectl get nodes --show-labels
+kubectl get deployments --namespace=kube-system
+
+#delete cluster
+kops delete cluster <name>-k8s-demo.k8s.local --yes
+
+HA
+====
+export KOPS_STATE_STORE=s3://<name>-k8s-demo-bucket
+kops create cluster <name>-k8s-demo.k8s.local --zones eu-central-1a,eu-central-1b --node-count 3 --master-zone eu-central-1a,eu-central-1b --yes
+kops validate cluster
+kubectl create-f ./mysql-deployment.yaml
+kubectl create-f ./wordpress-deployment.yaml
+kubectl get deployments 
+kubectl desribe pods
+kubectl desribe services wordpress
+kops delete cluster <name>-k8s-demo.k8s.local --yes
