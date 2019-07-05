@@ -20,6 +20,9 @@ docker run --name hello_cont busybox:1.24
 
 docker exec -it <cont_id> <command>
 
+docker stop $(docker ps -a -q)
+docker rm $(docker ps -a -q)
+
 INSPECT
 ========
 docker run -d busybox:1.24 sleep 100
@@ -93,6 +96,7 @@ docker run -v /dbdata --name dbstore2 ubuntu /bin/bash
 
 SERVICE
 ==================
+docker swarm init
 docker service create --name redis redis:3.0.6
 docker service create --mode global --name redis2 redis:3.0.6
 docker service ls
@@ -112,6 +116,12 @@ docker ps
 docker build -t dockerapp:v0.3 .
 docker run -d -p 5000:5000  --link redis <image_id>
 
+OVERLAY
+================
+docker network create -d overlay my_overlay
+docker service create --name appdomain --network my_overlay --publish 8001:8001 jboss
+docker servise create --name newservice --network my_overlay --publish 8080:8080 
+
 TRUST
 ===============
 docker trust key generate ricardo
@@ -128,7 +138,7 @@ docker trust inspect --pretty dtr.example.com/admin/demo:1
 
 COMPOSE
 ========
-docker-compose version
+docker-compose 
 docker-compose up [-d]
 docker-compose ps
 docker-compose logs [-f]

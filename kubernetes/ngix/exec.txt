@@ -1,0 +1,12 @@
+kubectl proxy
+
+kubectl create -f namespace.yaml
+kubectl create -f resourceQuota.yaml
+kubectl describe ns deployment-demo
+
+kubectl create -f deployment.yaml
+kubectl get deployments -n deployment-demo
+kubectl get deployment nginx -n deployment-demo  --output yaml
+
+kubectl create -f service.yaml
+kubectl get services  -n deployment-demo
